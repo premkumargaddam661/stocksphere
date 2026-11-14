@@ -1,196 +1,215 @@
 
 from pathlib import Path
 import os
+
 from dotenv import load_dotenv
 from django.core.exceptions import ImproperlyConfigured
 
+
+# =========================================================
+# BASE DIRECTORY
+# =========================================================
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Load private environment variables
+
+# =========================================================
+# ENVIRONMENT VARIABLES
+# =========================================================
+
 load_dotenv(BASE_DIR / ".env")
 
 
-# ==========================================
+# =========================================================
 # SECURITY SETTINGS
-# ==========================================
+# =========================================================
 
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
 
 if not SECRET_KEY:
     raise ImproperlyConfigured(
-        "DJANGO_SECRET_KEY is missing from the .env file."
+        "DJANGO_SECRET_KEY is missing from the environment variables."
     )
 
 DEBUG = os.getenv("DEBUG", "True").lower() == "true"
 
 ALLOWED_HOSTS = [
-    'localhost',
-    '127.0.0.1',
+    "localhost",
+    "127.0.0.1",
+    "stocksphere-production.up.railway.app",
 ]
 
 
-# ==========================================
+# =========================================================
 # INSTALLED APPLICATIONS
-# ==========================================
+# =========================================================
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
 
-    'corsheaders',
+    "corsheaders",
 
-    'warehouse_app',
+    "warehouse_app",
 ]
 
 
-# ==========================================
+# =========================================================
 # MIDDLEWARE
-# ==========================================
+# =========================================================
 
 MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
+    "django.middleware.security.SecurityMiddleware",
 
-    'corsheaders.middleware.CorsMiddleware',
+    "corsheaders.middleware.CorsMiddleware",
 
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
 
-# ==========================================
+# =========================================================
 # URL CONFIGURATION
-# ==========================================
+# =========================================================
 
-ROOT_URLCONF = 'config.urls'
+ROOT_URLCONF = "config.urls"
 
 
-# ==========================================
+# =========================================================
 # TEMPLATES
-# ==========================================
+# =========================================================
 
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [BASE_DIR / "templates"],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
             ],
         },
     },
 ]
 
 
-# ==========================================
+# =========================================================
 # WSGI APPLICATION
-# ==========================================
+# =========================================================
 
-WSGI_APPLICATION = 'config.wsgi.application'
+WSGI_APPLICATION = "config.wsgi.application"
 
 
-# ==========================================
-# MYSQL DATABASE CONFIGURATION
-# ==========================================
+# =========================================================
+# DATABASE CONFIGURATION - MYSQL
+# =========================================================
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.getenv('DB_NAME', 'stocksphere_db'),
-        'USER': os.getenv('DB_USER', 'root'),
-        'PASSWORD': os.getenv('DB_PASSWORD', ''),
-        'HOST': os.getenv('DB_HOST', '127.0.0.1'),
-        'PORT': os.getenv('DB_PORT', '3306'),
-        'OPTIONS': {
-            'charset': 'utf8mb4',
+    "default": {
+        "ENGINE": "django.db.backends.mysql",
+
+        "NAME": os.getenv("DB_NAME", "stocksphere_db"),
+        "USER": os.getenv("DB_USER", "root"),
+        "PASSWORD": os.getenv("DB_PASSWORD", ""),
+
+        "HOST": os.getenv("DB_HOST", "127.0.0.1"),
+        "PORT": os.getenv("DB_PORT", "3306"),
+
+        "OPTIONS": {
+            "charset": "utf8mb4",
         },
     }
 }
 
 
-# ==========================================
+# =========================================================
 # PASSWORD VALIDATION
-# ==========================================
+# =========================================================
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
 
 
-# ==========================================
-# LANGUAGE AND TIMEZONE
-# ==========================================
+# =========================================================
+# INTERNATIONALIZATION
+# =========================================================
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = 'Asia/Kolkata'
+TIME_ZONE = "Asia/Kolkata"
 
 USE_I18N = True
 
 USE_TZ = True
 
 
-# ==========================================
+# =========================================================
 # STATIC FILES
-# ==========================================
+# =========================================================
 
-STATIC_URL = 'static/'
-
-
-# ==========================================
-# MEDIA FILES - PRODUCT IMAGES
-# ==========================================
-
-MEDIA_URL = '/media/'
-
-MEDIA_ROOT = BASE_DIR / 'media'
+STATIC_URL = "static/"
 
 
-# ==========================================
+# =========================================================
+# MEDIA FILES / PRODUCT IMAGES
+# =========================================================
+
+MEDIA_URL = "/media/"
+
+MEDIA_ROOT = BASE_DIR / "media"
+
+
+# =========================================================
 # CORS CONFIGURATION
-# ==========================================
+# =========================================================
 
 CORS_ALLOWED_ORIGINS = [
-    'http://127.0.0.1:5500',
-    'http://localhost:5500',
+    "http://127.0.0.1:5500",
+    "http://localhost:5500",
 ]
+
+
+# =========================================================
+# CSRF CONFIGURATION
+# =========================================================
 
 CSRF_TRUSTED_ORIGINS = [
-    'http://127.0.0.1:5500',
-    'http://localhost:5500',
+    "http://127.0.0.1:5500",
+    "http://localhost:5500",
 ]
 
 
-# ==========================================
+# =========================================================
 # EMAIL CONFIGURATION
-# ==========================================
+# =========================================================
 
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 
-# ==========================================
+# =========================================================
 # DEFAULT PRIMARY KEY
-# ==========================================
+# =========================================================
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
