@@ -19,7 +19,7 @@ if not SECRET_KEY:
         "DJANGO_SECRET_KEY is missing from the environment variables."
     )
 
-DEBUG = os.getenv("DEBUG", "True").lower() == "true"
+DEBUG = os.getenv("DEBUG", "False").lower() == "true"
 
 ALLOWED_HOSTS = [
     "localhost",
@@ -125,9 +125,11 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 # CSRF
+# CSRF
 CSRF_TRUSTED_ORIGINS = [
     "http://127.0.0.1:5500",
     "http://localhost:5500",
+    "https://stocksphere-production.up.railway.app",
 ]
 
 # EMAIL
