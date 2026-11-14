@@ -1,34 +1,29 @@
-
 from pathlib import Path
 import os
 
 from dotenv import load_dotenv
 from django.core.exceptions import ImproperlyConfigured
 
-# BASE DIRECTORY
 BASE_DIR = Path(__file__).resolve().parent.parent
-
-# ENVIRONMENT VARIABLES
 load_dotenv(BASE_DIR / ".env")
 
-# SECURITY SETTINGS
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
-
 if not SECRET_KEY:
-    raise ImproperlyConfigured(
-        "DJANGO_SECRET_KEY is missing from the environment variables."
-    )
+    raise ImproperlyConfigured("Set DJANGO_SECRET_KEY in the service environment.")
 
 DEBUG = os.getenv("DEBUG", "False").lower() == "true"
 
-ALLOWED_HOSTS = [
-    "localhost",
-    "127.0.0.1",
-    "stocksphere-production.up.railway.app",
-    ".railway.app",
-]
 
-# INSTALLED APPLICATIONS
+def csv_env(name):
+    return [value.strip() for value in os.getenv(name, "").split(",") if value.strip()]
+
+
+ALLOWED_HOSTS = ["localhost", "127.0.0.1", ".railway.app"]
+railway_domain = os.getenv("RAILWAY_PUBLIC_DOMAIN", "").strip()
+if railway_domain:
+    ALLOWED_HOSTS.append(railway_domain.removeprefix("https://").removeprefix("http://").split("/")[0])
+ALLOWED_HOSTS.extend(csv_env("DJANGO_ALLOWED_HOSTS"))
+
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -40,9 +35,9 @@ INSTALLED_APPS = [
     "warehouse_app",
 ]
 
-# MIDDLEWARE
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -52,10 +47,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-# URL CONFIGURATION
 ROOT_URLCONF = "config.urls"
-
-# TEMPLATES
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
@@ -70,70 +62,64 @@ TEMPLATES = [
         },
     },
 ]
-
-# WSGI
 WSGI_APPLICATION = "config.wsgi.application"
 
-# MYSQL DATABASE
+# Railway MySQL variables are preferred; DB_* keeps local .env compatibility.
+mysql_host = os.getenv("MYSQLHOST") or os.getenv("DB_HOST", "127.0.0.1")
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.mysql",
-        "NAME": os.getenv("DB_NAME", "stocksphere_db"),
-        "USER": os.getenv("DB_USER", "root"),
-        "PASSWORD": os.getenv("DB_PASSWORD", ""),
-        "HOST": os.getenv("DB_HOST", "127.0.0.1"),
-        "PORT": os.getenv("DB_PORT", "3306"),
-        "OPTIONS": {
-            "charset": "utf8mb4",
-        },
+        "NAME": os.getenv("MYSQLDATABASE") or os.getenv("DB_NAME", "stocksphere_db"),
+        "USER": os.getenv("MYSQLUSER") or os.getenv("DB_USER", "root"),
+        "PASSWORD": os.getenv("MYSQLPASSWORD") or os.getenv("DB_PASSWORD", ""),
+        "HOST": mysql_host,
+        "PORT": os.getenv("MYSQLPORT") or os.getenv("DB_PORT", "3306"),
+        "OPTIONS": {"charset": "utf8mb4"},
+        "CONN_MAX_AGE": 60,
     }
 }
 
-# PASSWORD VALIDATION
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
-    },
+    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
+    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
+    {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
+    {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
-# INTERNATIONALIZATION
 LANGUAGE_CODE = "en-us"
 TIME_ZONE = "Asia/Kolkata"
 USE_I18N = True
 USE_TZ = True
 
-# STATIC FILES
-STATIC_URL = "static/"
-
-# MEDIA FILES
+STATIC_URL = "/static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
-# CORS
 CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:5500",
     "http://localhost:5500",
+    *csv_env("CORS_ALLOWED_ORIGINS"),
 ]
-
-# CSRF
-# CSRF
 CSRF_TRUSTED_ORIGINS = [
     "http://127.0.0.1:5500",
     "http://localhost:5500",
-    "https://stocksphere-production.up.railway.app",
+    *[
+        origin if "://" in origin else f"https://{origin}"
+        for origin in csv_env("CSRF_TRUSTED_ORIGINS")
+    ],
 ]
+if railway_domain:
+    CSRF_TRUSTED_ORIGINS.append(f"https://{railway_domain.removeprefix('https://').removeprefix('http://').split('/')[0]}")
+CSRF_TRUSTED_ORIGINS.extend(
+    f"https://{host.removeprefix('.')}" for host in ALLOWED_HOSTS if host.endswith(".railway.app")
+)
 
-# EMAIL
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+SECURE_SSL_REDIRECT = os.getenv("SECURE_SSL_REDIRECT", "False").lower() == "true"
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
+
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-
-# DEFAULT PRIMARY KEY
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"

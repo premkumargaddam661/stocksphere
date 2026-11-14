@@ -1,17 +1,16 @@
-
 from django.contrib import admin
-from django.urls import path, include
-from django.conf import settings
-from django.conf.urls.static import static
+from django.urls import include, path, re_path
+
+from . import views
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('api/', include('warehouse_app.urls')),
+    path("", views.home, name="home"),
+    path("health/", views.health, name="health"),
+    path("admin/", admin.site.urls),
+    path("api/", include("warehouse_app.urls")),
+    re_path(
+        r"^(?P<file_path>.+\.(?:html|css|js|png|jpe?g|webp|gif|svg|ico|woff2?|ttf))$",
+        views.frontend_file,
+        name="frontend-file",
+    ),
 ]
-
-# Serve uploaded media files during development
-if settings.DEBUG:
-    urlpatterns += static(
-        settings.MEDIA_URL,
-        document_root=settings.MEDIA_ROOT
-    )
