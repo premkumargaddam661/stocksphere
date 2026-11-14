@@ -1,95 +1,124 @@
 
+"use strict";
+
+const isLocal =
+    location.hostname === "localhost" ||
+    location.hostname === "127.0.0.1";
+
+const API_BASE = isLocal
+    ? `http://${location.hostname}:8000/api`
+    : "/api";
+
 const loginForm = document.getElementById("loginForm");
 const password = document.getElementById("password");
 const togglePassword = document.getElementById("togglePassword");
 const loginMessage = document.getElementById("loginMessage");
 const forgotPassword = document.getElementById("forgotPassword");
 
-// Check that required elements exist
-if (!loginForm || !password || !togglePassword || !loginMessage) {
-    console.error("StockSphere login elements are missing.");
+let csrfToken = "";
+
+function showMessage(message, success = false) {
+    loginMessage.style.color = success ? "#55d6a2" : "#ff6675";
+    loginMessage.textContent = message;
 }
 
-// Show / hide password
-togglePassword.addEventListener("click", () => {
-    if (password.type === "password") {
-        password.type = "text";
-        togglePassword.textContent = "HIDE";
-    } else {
-        password.type = "password";
-        togglePassword.textContent = "SHOW";
+async function getCsrfToken() {
+    const response = await fetch(`${API_BASE}/auth/csrf/`, {
+        method: "GET",
+        credentials: "include"
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || !data.csrfToken) {
+        throw new Error("Unable to establish a secure connection.");
     }
+
+    csrfToken = data.csrfToken;
+}
+
+async function apiPost(path, body) {
+    if (!csrfToken) {
+        await getCsrfToken();
+    }
+
+    const response = await fetch(`${API_BASE}${path}`, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": csrfToken
+        },
+        body: JSON.stringify(body)
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+        throw new Error(data.message || "Request failed.");
+    }
+
+    return data;
+}
+
+togglePassword.addEventListener("click", () => {
+    const showing = password.type === "text";
+
+    password.type = showing ? "password" : "text";
+    togglePassword.textContent = showing ? "SHOW" : "HIDE";
 });
 
-// Login
-loginForm.addEventListener("submit", (event) => {
+loginForm.addEventListener("submit", async (event) => {
     event.preventDefault();
 
     const email = document.getElementById("email").value.trim();
     const pass = password.value;
     const remember = document.getElementById("remember").checked;
 
-    loginMessage.style.color = "#ff6675";
-
     if (!email || !pass) {
-        loginMessage.textContent = "Please complete all fields.";
+        showMessage("Please complete all fields.");
         return;
     }
 
-    if (pass.length < 6) {
-        loginMessage.textContent =
-            "Password must contain at least 6 characters.";
-        return;
-    }
+    const button = loginForm.querySelector('button[type="submit"]');
+    const originalText = button.innerHTML;
 
-    // DEMO LOGIN ONLY - Django authentication will replace this.
-    const user = {
-        email: email,
-        loggedIn: true
-    };
+    button.disabled = true;
+    button.textContent = "SIGNING IN...";
 
     try {
-        localStorage.removeItem("stocksphere_user");
-        sessionStorage.removeItem("stocksphere_user");
+        const data = await apiPost("/auth/login/", {
+            email: email,
+            password: pass,
+            remember: remember
+        });
 
-        if (remember) {
-            localStorage.setItem(
-                "stocksphere_user",
-                JSON.stringify(user)
-            );
-        } else {
-            sessionStorage.setItem(
-                "stocksphere_user",
-                JSON.stringify(user)
-            );
-        }
+        showMessage(data.message, true);
 
-        loginMessage.style.color = "#55d6a2";
-        loginMessage.textContent = "Login successful! Opening dashboard...";
-
-        // Redirect to dashboard
         setTimeout(() => {
             window.location.href = "index.html";
-        }, 700);
+        }, 500);
 
     } catch (error) {
-        loginMessage.textContent =
-            "Login failed. Browser storage is unavailable.";
+        showMessage(error.message);
+    } finally {
+        button.disabled = false;
+        button.innerHTML = originalText;
     }
 });
 
-// Forgot password
 forgotPassword.addEventListener("click", () => {
     const email = document.getElementById("email").value.trim();
 
     if (!email) {
-        loginMessage.style.color = "#ff6675";
-        loginMessage.textContent =
-            "Please enter your email address first.";
+        showMessage("Please enter your email address first.");
         return;
     }
 
-    loginMessage.style.color = "#ff6675";
-    loginMessage.textContent =
-        "Password recovery will be available with Django.";
+    showMessage("Password recovery is not available yet.");
+});
+
+getCsrfToken().catch((error) => {
+    console.error("StockSphere connection error:", error);
+    showMessage("Cannot connect to StockSphere. Check that the server is running.");
 });

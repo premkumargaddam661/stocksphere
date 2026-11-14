@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,251 +9,626 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 </head>
 <body>
+
 <div class="app">
+
     <aside class="sidebar">
         <a href="landing.html" class="brand">
             <span class="brand-icon">S</span>
             STOCK<span>SPHERE</span>
         </a>
+
         <p class="side-label">WORKSPACE</p>
+
         <button class="nav-item active" data-view="overview">◈ Overview</button>
         <button class="nav-item" data-view="products">▣ Products</button>
         <button class="nav-item" data-view="stock">↗ Stock Movements</button>
         <button class="nav-item" data-view="analytics">▥ Analytics</button>
+
         <div class="sidebar-bottom">
             <div class="user-info">
-                <div class="avatar">P</div>
-                <div><strong>StockSphere Admin</strong><small>Administrator</small></div>
+                <div class="avatar" id="sidebarAvatar">S</div>
+                <div>
+                    <strong id="sidebarUserName">StockSphere User</strong>
+                    <small id="sidebarUserRole">User</small>
+                </div>
             </div>
+
             <button id="logoutBtn" class="logout-btn">↪ Logout</button>
         </div>
     </aside>
 
+
     <main class="main">
+
         <header class="topbar">
             <div>
                 <p class="top-caption">INVENTORY MANAGEMENT SYSTEM</p>
                 <h2 id="pageTitle">Overview</h2>
             </div>
+
             <div class="top-right">
                 <span class="online"><i></i> SYSTEM ONLINE</span>
-                <span class="admin-avatar">P</span>
+                <span class="admin-avatar" id="topAvatar">S</span>
             </div>
         </header>
 
+
+        <!-- OVERVIEW -->
+
         <section class="view active" id="overview">
+
             <div class="welcome">
                 <div>
                     <p class="eyebrow">CONTROL CENTER / 01</p>
                     <h1>Inventory at a <span>glance.</span></h1>
                     <p>Monitor your stock. Understand your business. Stay in control.</p>
                 </div>
+
                 <button class="primary-btn" data-action="add">+ Add Product</button>
             </div>
 
             <div class="stats-grid">
-                <div class="stat-card"><span>TOTAL PRODUCTS</span><h2 id="totalProducts">0</h2><small>Products in inventory</small></div>
-                <div class="stat-card"><span>TOTAL STOCK UNITS</span><h2 id="totalUnits">0</h2><small>Available quantities</small></div>
-                <div class="stat-card"><span>INVENTORY VALUE</span><h2 id="inventoryValue">₹0</h2><small>Estimated selling value</small></div>
-                <div class="stat-card alert-card"><span>LOW STOCK ALERTS</span><h2 id="lowStock">0</h2><small>Products needing attention</small></div>
+                <div class="stat-card">
+                    <span>TOTAL PRODUCTS</span>
+                    <h2 id="totalProducts">0</h2>
+                    <small>Products in inventory</small>
+                </div>
+
+                <div class="stat-card">
+                    <span>TOTAL STOCK UNITS</span>
+                    <h2 id="totalUnits">0</h2>
+                    <small>Available quantities</small>
+                </div>
+
+                <div class="stat-card">
+                    <span>INVENTORY VALUE</span>
+                    <h2 id="inventoryValue">₹0</h2>
+                    <small>Estimated selling value</small>
+                </div>
+
+                <div class="stat-card alert-card">
+                    <span>LOW STOCK ALERTS</span>
+                    <h2 id="lowStock">0</h2>
+                    <small>Products needing attention</small>
+                </div>
             </div>
 
             <div class="content-grid">
+
                 <div class="panel">
                     <div class="panel-heading">
-                        <div><p class="eyebrow">INVENTORY</p><h3>Recent Products</h3></div>
+                        <div>
+                            <p class="eyebrow">INVENTORY</p>
+                            <h3>Recent Products</h3>
+                        </div>
+
                         <button class="text-btn" data-view-link="products">View all →</button>
                     </div>
+
                     <div class="table-wrap">
                         <table>
-                            <thead><tr><th>PRODUCT</th><th>CATEGORY</th><th>QUANTITY</th><th>PRICE</th></tr></thead>
+                            <thead>
+                                <tr>
+                                    <th>PRODUCT</th>
+                                    <th>QUANTITY</th>
+                                    <th>PRICE</th>
+                                </tr>
+                            </thead>
+
                             <tbody id="recentProducts"></tbody>
                         </table>
                     </div>
                 </div>
+
                 <div class="panel">
-                    <div class="panel-heading"><div><p class="eyebrow">STOCK STATUS</p><h3>Inventory Health</h3></div></div>
+                    <div class="panel-heading">
+                        <div>
+                            <p class="eyebrow">STOCK STATUS</p>
+                            <h3>Inventory Health</h3>
+                        </div>
+                    </div>
+
                     <div id="healthSummary" class="health-summary"></div>
                 </div>
+
             </div>
         </section>
 
+
+        <!-- PRODUCTS -->
+
         <section class="view" id="products">
+
             <div class="section-heading">
-                <div><p class="eyebrow">INVENTORY / 02</p><h1>Product <span>Management.</span></h1><p>Manage all your products in one place.</p></div>
+                <div>
+                    <p class="eyebrow">INVENTORY / 02</p>
+                    <h1>Product <span>Management.</span></h1>
+                    <p>Manage all your products in one place.</p>
+                </div>
+
                 <button class="primary-btn" data-action="add">+ Add Product</button>
             </div>
+
             <div class="toolbar">
                 <input type="search" id="searchInput" placeholder="Search products...">
-                <select id="categoryFilter"><option value="all">All Categories</option></select>
                 <button class="secondary-btn" id="exportBtn">↓ Export CSV</button>
             </div>
+
             <div class="panel">
                 <div class="table-wrap">
                     <table>
-                        <thead><tr><th>PRODUCT</th><th>CATEGORY</th><th>PRICE</th><th>STOCK</th><th>STATUS</th><th>ACTIONS</th></tr></thead>
+                        <thead>
+                            <tr>
+                                <th>PRODUCT</th>
+                                <th>PRICE</th>
+                                <th>STOCK</th>
+                                <th>STATUS</th>
+                                <th>ACTIONS</th>
+                            </tr>
+                        </thead>
+
                         <tbody id="productTable"></tbody>
                     </table>
                 </div>
-                <div id="emptyState" class="empty-state" hidden>No products found. Try another search.</div>
+
+                <div id="emptyState" class="empty-state" hidden>
+                    No products found. Try another search.
+                </div>
             </div>
+
             <p class="result-count" id="resultCount"></p>
         </section>
 
+
+        <!-- STOCK MOVEMENTS -->
+
         <section class="view" id="stock">
+
             <div class="section-heading">
-                <div><p class="eyebrow">OPERATIONS / 03</p><h1>Stock <span>Movements.</span></h1><p>Track stock entering and leaving your inventory.</p></div>
+                <div>
+                    <p class="eyebrow">OPERATIONS / 03</p>
+                    <h1>Stock <span>Movements.</span></h1>
+                    <p>Track stock entering and leaving your inventory.</p>
+                </div>
             </div>
+
             <div class="stats-grid movement-stats">
-                <div class="stat-card"><span>TOTAL TRANSACTIONS</span><h2 id="totalMovements">0</h2><small>Recorded movements</small></div>
-                <div class="stat-card"><span>STOCK IN</span><h2 id="totalIn">0</h2><small>Units received</small></div>
-                <div class="stat-card"><span>STOCK OUT</span><h2 id="totalOut">0</h2><small>Units dispatched</small></div>
+                <div class="stat-card">
+                    <span>TOTAL TRANSACTIONS</span>
+                    <h2 id="totalMovements">0</h2>
+                    <small>Recorded movements</small>
+                </div>
+
+                <div class="stat-card">
+                    <span>STOCK IN</span>
+                    <h2 id="totalIn">0</h2>
+                    <small>Units received</small>
+                </div>
+
+                <div class="stat-card">
+                    <span>STOCK OUT</span>
+                    <h2 id="totalOut">0</h2>
+                    <small>Units dispatched</small>
+                </div>
             </div>
+
             <div class="panel">
-                <div class="panel-heading"><h3>Movement History</h3></div>
+                <div class="panel-heading">
+                    <h3>Movement History</h3>
+                </div>
+
                 <div class="table-wrap">
                     <table>
-                        <thead><tr><th>DATE</th><th>PRODUCT</th><th>TYPE</th><th>QUANTITY</th></tr></thead>
+                        <thead>
+                            <tr>
+                                <th>DATE</th>
+                                <th>PRODUCT</th>
+                                <th>TYPE</th>
+                                <th>QUANTITY</th>
+                            </tr>
+                        </thead>
+
                         <tbody id="movementTable"></tbody>
                     </table>
                 </div>
             </div>
         </section>
 
+
+        <!-- ANALYTICS -->
+
         <section class="view" id="analytics">
+
             <div class="section-heading">
-                <div><p class="eyebrow">INSIGHTS / 04</p><h1>Inventory <span>Analytics.</span></h1><p>Live analysis calculated from your database inventory and stock movements.</p></div>
+                <div>
+                    <p class="eyebrow">INSIGHTS / 04</p>
+                    <h1>Inventory <span>Analytics.</span></h1>
+                    <p>Live analysis calculated from your database inventory and stock movements.</p>
+                </div>
+
                 <button class="secondary-btn" id="refreshAnalyticsBtn">↻ Refresh Data</button>
             </div>
 
             <div class="stats-grid analytics-stats">
-                <div class="stat-card"><span>TOTAL PRODUCTS</span><h2 id="analyticsProducts">0</h2><small>Distinct products</small></div>
-                <div class="stat-card"><span>TOTAL STOCK UNITS</span><h2 id="analyticsUnits">0</h2><small>Current available quantity</small></div>
-                <div class="stat-card"><span>INVENTORY COST VALUE</span><h2 id="analyticsCostValue">₹0</h2><small>Quantity × cost price</small></div>
-                <div class="stat-card"><span>INVENTORY SELLING VALUE</span><h2 id="analyticsValue">₹0</h2><small>Quantity × selling price</small></div>
-                <div class="stat-card alert-card"><span>LOW STOCK PRODUCTS</span><h2 id="analyticsLowStock">0</h2><small>At or below reorder level</small></div>
-                <div class="stat-card alert-card"><span>OUT OF STOCK</span><h2 id="analyticsOutOfStock">0</h2><small>Quantity is zero</small></div>
+
+                <div class="stat-card">
+                    <span>TOTAL PRODUCTS</span>
+                    <h2 id="analyticsProducts">0</h2>
+                    <small>Distinct products</small>
+                </div>
+
+                <div class="stat-card">
+                    <span>TOTAL STOCK UNITS</span>
+                    <h2 id="analyticsUnits">0</h2>
+                    <small>Current available quantity</small>
+                </div>
+
+                <div class="stat-card">
+                    <span>INVENTORY COST VALUE</span>
+                    <h2 id="analyticsCostValue">₹0</h2>
+                    <small>Quantity × cost price</small>
+                </div>
+
+                <div class="stat-card">
+                    <span>INVENTORY SELLING VALUE</span>
+                    <h2 id="analyticsValue">₹0</h2>
+                    <small>Quantity × selling price</small>
+                </div>
+
+                <div class="stat-card alert-card">
+                    <span>LOW STOCK PRODUCTS</span>
+                    <h2 id="analyticsLowStock">0</h2>
+                    <small>At or below reorder level</small>
+                </div>
+
+                <div class="stat-card alert-card">
+                    <span>OUT OF STOCK</span>
+                    <h2 id="analyticsOutOfStock">0</h2>
+                    <small>Quantity is zero</small>
+                </div>
+
             </div>
+
 
             <div class="analytics-grid">
+
                 <div class="panel">
-                    <div class="panel-heading"><div><p class="eyebrow">PRODUCT DISTRIBUTION</p><h3>Products by Category</h3></div></div>
-                    <div class="chart-box"><canvas id="categoryProductsChart"></canvas></div>
+                    <div class="panel-heading">
+                        <div>
+                            <p class="eyebrow">MOVEMENT SUMMARY</p>
+                            <h3>Stock IN vs Stock OUT</h3>
+                        </div>
+                    </div>
+
+                    <div class="chart-box">
+                        <canvas id="movementChart"></canvas>
+                    </div>
+
+                    <p class="chart-note">
+                        Based on recorded Purchase, Issue and Sale movement quantities.
+                    </p>
                 </div>
+
                 <div class="panel">
-                    <div class="panel-heading"><div><p class="eyebrow">STOCK DISTRIBUTION</p><h3>Stock Quantity by Category</h3></div></div>
-                    <div class="chart-box"><canvas id="categoryStockChart"></canvas></div>
+                    <div class="panel-heading">
+                        <div>
+                            <p class="eyebrow">INVENTORY VALUATION</p>
+                            <h3>Cost vs Selling Value</h3>
+                        </div>
+                    </div>
+
+                    <div class="chart-box">
+                        <canvas id="valuationChart"></canvas>
+                    </div>
+
+                    <p class="chart-note">
+                        Values represent current stock quantity multiplied by the corresponding product price.
+                    </p>
                 </div>
-                <div class="panel">
-                    <div class="panel-heading"><div><p class="eyebrow">MOVEMENT SUMMARY</p><h3>Stock IN vs Stock OUT</h3></div></div>
-                    <div class="chart-box"><canvas id="movementChart"></canvas></div>
-                    <p class="chart-note">Based on recorded Purchase, Issue and Sale movement quantities. Stock OUT is not assumed to be a sale.</p>
+
+            </div>
+
+
+            <div class="panel analytics-panel">
+                <div class="panel-heading">
+                    <div>
+                        <p class="eyebrow">REORDER MONITOR</p>
+                        <h3>Low Stock Products</h3>
+                    </div>
                 </div>
-                <div class="panel">
-                    <div class="panel-heading"><div><p class="eyebrow">INVENTORY VALUATION</p><h3>Cost vs Selling Value</h3></div></div>
-                    <div class="chart-box"><canvas id="valuationChart"></canvas></div>
-                    <p class="chart-note">Values represent current stock quantity multiplied by the corresponding product price.</p>
+
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>PRODUCT</th>
+                                <th>CURRENT QUANTITY</th>
+                                <th>REORDER LEVEL</th>
+                                <th>SHORTAGE</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="lowStockTable"></tbody>
+                    </table>
                 </div>
             </div>
 
+
             <div class="panel analytics-panel">
-                <div class="panel-heading"><div><p class="eyebrow">REORDER MONITOR</p><h3>Low Stock Products</h3></div></div>
+                <div class="panel-heading">
+                    <div>
+                        <p class="eyebrow">CRITICAL INVENTORY</p>
+                        <h3>Out of Stock Products</h3>
+                    </div>
+                </div>
+
                 <div class="table-wrap">
-                    <table><thead><tr><th>PRODUCT</th><th>CURRENT QUANTITY</th><th>REORDER LEVEL</th><th>SHORTAGE</th></tr></thead><tbody id="lowStockTable"></tbody></table>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>PRODUCT</th>
+                                <th>REORDER LEVEL</th>
+                                <th>STATUS</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="outOfStockTable"></tbody>
+                    </table>
                 </div>
             </div>
 
-            <div class="panel analytics-panel">
-                <div class="panel-heading"><div><p class="eyebrow">CRITICAL INVENTORY</p><h3>Out of Stock Products</h3></div></div>
-                <div class="table-wrap">
-                    <table><thead><tr><th>PRODUCT</th><th>CATEGORY</th><th>REORDER LEVEL</th><th>STATUS</th></tr></thead><tbody id="outOfStockTable"></tbody></table>
-                </div>
-            </div>
+
+            <!-- MONTHLY SALES -->
 
             <div class="monthly-sales-section">
+
                 <div class="section-heading">
-                    <div><p class="eyebrow">SALES PERFORMANCE / 05</p><h1>Monthly <span>Sales Report.</span></h1><p>Sales reporting will become available after actual sales recording is implemented.</p></div>
+                    <div>
+                        <p class="eyebrow">SALES PERFORMANCE / 05</p>
+                        <h1>Monthly <span>Sales Report.</span></h1>
+                        <p>Sales reporting will become available after actual sales recording is implemented.</p>
+                    </div>
                 </div>
+
                 <div class="sales-unavailable">
                     <strong>Sales analytics not connected yet</strong>
-                    <p>Your current backend records stock movements, but does not store confirmed sale prices and sale dates as sales transactions. Therefore monthly sales, units sold and revenue are not displayed as invented figures.</p>
+                    <p>
+                        Your current backend records stock movements, but does not store confirmed sale prices and sale dates as sales transactions. Therefore monthly sales, units sold and revenue are not displayed as invented figures.
+                    </p>
                 </div>
+
                 <div class="sales-filters">
-                    <div class="sales-filter-field"><label for="productSelect">SELECT PRODUCT</label><select id="productSelect"><option value="">No products available</option></select></div>
-                    <div class="sales-filter-field"><label for="yearSelect">SELECT YEAR</label><select id="yearSelect"><option value="2026">2026</option><option value="2025">2025</option></select></div>
+                    <div class="sales-filter-field">
+                        <label for="productSelect">SELECT PRODUCT</label>
+                        <select id="productSelect">
+                            <option value="">No products available</option>
+                        </select>
+                    </div>
+
+                    <div class="sales-filter-field">
+                        <label for="yearSelect">SELECT YEAR</label>
+                        <select id="yearSelect">
+                            <option value="2026">2026</option>
+                            <option value="2025">2025</option>
+                        </select>
+                    </div>
                 </div>
+
                 <div class="stats-grid sales-summary-grid">
-                    <div class="stat-card"><span>TOTAL QUANTITY SOLD</span><h2 id="totalQuantity">—</h2><small>Requires actual sales records</small></div>
-                    <div class="stat-card"><span>TOTAL SALES REVENUE</span><h2 id="totalRevenue">—</h2><small>Requires actual sale prices</small></div>
+                    <div class="stat-card">
+                        <span>TOTAL QUANTITY SOLD</span>
+                        <h2 id="totalQuantity">—</h2>
+                        <small>Requires actual sales records</small>
+                    </div>
+
+                    <div class="stat-card">
+                        <span>TOTAL SALES REVENUE</span>
+                        <h2 id="totalRevenue">—</h2>
+                        <small>Requires actual sale prices</small>
+                    </div>
                 </div>
+
                 <div class="panel sales-panel">
-                    <div class="panel-heading"><div><p class="eyebrow">MONTHLY PERFORMANCE</p><h3>Sales Amount by Month</h3></div></div>
-                    <div class="sales-chart-container"><canvas id="salesChart"></canvas><p id="salesChartFallback" class="chart-fallback" hidden>Chart library could not load.</p></div>
+                    <div class="panel-heading">
+                        <div>
+                            <p class="eyebrow">MONTHLY PERFORMANCE</p>
+                            <h3>Sales Amount by Month</h3>
+                        </div>
+                    </div>
+
+                    <div class="sales-chart-container">
+                        <canvas id="salesChart"></canvas>
+                        <p id="salesChartFallback" class="chart-fallback" hidden>
+                            Chart library could not load.
+                        </p>
+                    </div>
                 </div>
+
                 <div class="panel sales-panel">
-                    <div class="panel-heading"><div><p class="eyebrow">DETAILED REPORT</p><h3>Monthly Sales Details</h3></div></div>
-                    <div class="table-wrap"><table class="sales-table"><thead><tr><th>MONTH</th><th>PRODUCT</th><th>QUANTITY SOLD</th><th>SALES AMOUNT</th></tr></thead><tbody id="salesTable"><tr><td colspan="4">No sales records available.</td></tr></tbody></table></div>
+                    <div class="panel-heading">
+                        <div>
+                            <p class="eyebrow">DETAILED REPORT</p>
+                            <h3>Monthly Sales Details</h3>
+                        </div>
+                    </div>
+
+                    <div class="table-wrap">
+                        <table class="sales-table">
+                            <thead>
+                                <tr>
+                                    <th>MONTH</th>
+                                    <th>PRODUCT</th>
+                                    <th>QUANTITY SOLD</th>
+                                    <th>SALES AMOUNT</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="salesTable">
+                                <tr>
+                                    <td colspan="4">No sales records available.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
+
             </div>
         </section>
+
     </main>
 </div>
 
+
+<!-- PRODUCT MODAL -->
+
 <div class="modal-overlay" id="productModal">
     <div class="modal">
-        <div class="modal-header"><div><p class="eyebrow">PRODUCT DETAILS</p><h2 id="modalTitle">Add Product</h2></div><button class="close-btn" data-close="productModal">×</button></div>
+
+        <div class="modal-header">
+            <div>
+                <p class="eyebrow">PRODUCT DETAILS</p>
+                <h2 id="modalTitle">Add Product</h2>
+            </div>
+
+            <button class="close-btn" data-close="productModal">×</button>
+        </div>
+
         <form id="productForm">
+
             <input type="hidden" id="productId">
+
             <label for="productName">Product Name</label>
             <input id="productName" required maxlength="100" placeholder="Enter product name">
+
             <label for="productSKU">SKU</label>
             <input id="productSKU" required maxlength="50" placeholder="e.g. LAP-001">
-            <label for="productCategory">Category</label>
-            <select id="productCategory" required></select>
+
             <div class="form-row">
-                <div><label for="productQuantity">Quantity</label><input id="productQuantity" type="number" min="0" step="1" required></div>
-                <div><label for="productReorderLevel">Reorder Level</label><input id="productReorderLevel" type="number" min="0" step="1" required></div>
+                <div>
+                    <label for="productQuantity">Quantity</label>
+                    <input id="productQuantity" type="number" min="0" step="1" required>
+                </div>
+
+                <div>
+                    <label for="productReorderLevel">Reorder Level</label>
+                    <input id="productReorderLevel" type="number" min="0" step="1" required>
+                </div>
             </div>
+
             <div class="form-row">
-                <div><label for="productCostPrice">Cost Price (₹)</label><input id="productCostPrice" type="number" min="0" step="0.01" required></div>
-                <div><label for="productPrice">Selling Price (₹)</label><input id="productPrice" type="number" min="0" step="0.01" required></div>
+                <div>
+                    <label for="productCostPrice">Cost Price (₹)</label>
+                    <input id="productCostPrice" type="number" min="0" step="0.01" required>
+                </div>
+
+                <div>
+                    <label for="productPrice">Selling Price (₹)</label>
+                    <input id="productPrice" type="number" min="0" step="0.01" required>
+                </div>
             </div>
 
             <div class="image-upload-field">
+
                 <label for="productImage">Product Image (optional)</label>
-                <input id="productImage" type="file" accept="image/jpeg,image/png,image/webp">
-                <small class="field-help">Choose a JPG, PNG or WebP image. Maximum file size: 5 MB.</small>
-                <div class="image-preview-box" style="margin-top:10px;width:120px;height:120px;border:1px dashed #526078;border-radius:10px;background:#172235;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:6px;box-sizing:border-box;">
-                    <img id="productImagePreview" alt="Product image preview" hidden style="width:100%;height:100%;object-fit:cover;border-radius:7px;">
-                    <span id="productImagePlaceholder" style="font-size:11px;color:#aab6c8;text-align:center;">Image preview will appear here</span>
+
+                <input
+                    id="productImage"
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                >
+
+                <small class="field-help">
+                    Choose a JPG, PNG or WebP image. Maximum file size: 5 MB.
+                </small>
+
+                <div class="image-preview-box"
+                    style="margin-top:10px;width:120px;height:120px;border:1px dashed #526078;border-radius:10px;background:#172235;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:6px;box-sizing:border-box;">
+
+                    <img
+                        id="productImagePreview"
+                        alt="Product image preview"
+                        hidden
+                        style="width:100%;height:100%;object-fit:cover;border-radius:7px;"
+                    >
+
+                    <span
+                        id="productImagePlaceholder"
+                        style="font-size:11px;color:#aab6c8;text-align:center;"
+                    >
+                        Image preview will appear here
+                    </span>
                 </div>
-                <label class="remove-image-option" for="removeProductImage" style="display:flex;align-items:center;gap:8px;margin:10px 0;font-size:12px;">
+
+                <label class="remove-image-option"
+                    for="removeProductImage"
+                    style="display:flex;align-items:center;gap:8px;margin:10px 0;font-size:12px;">
+
                     <input type="checkbox" id="removeProductImage">
                     Remove the currently saved image
+
                 </label>
             </div>
 
-            <small class="field-help">Supplier is optional in the current database and is preserved when editing an existing product.</small>
-            <button class="primary-btn full-btn" type="submit">Save Product</button>
+            <small class="field-help">
+                Supplier is optional in the current database and is preserved when editing an existing product.
+            </small>
+
+            <button class="primary-btn full-btn" type="submit">
+                Save Product
+            </button>
+
         </form>
     </div>
 </div>
+
+
+<!-- STOCK MOVEMENT MODAL -->
 
 <div class="modal-overlay" id="stockModal">
     <div class="modal small-modal">
-        <div class="modal-header"><div><p class="eyebrow">INVENTORY UPDATE</p><h2>Stock Movement</h2></div><button class="close-btn" data-close="stockModal">×</button></div>
+
+        <div class="modal-header">
+            <div>
+                <p class="eyebrow">INVENTORY UPDATE</p>
+                <h2>Stock Movement</h2>
+            </div>
+
+            <button class="close-btn" data-close="stockModal">×</button>
+        </div>
+
         <form id="stockForm">
+
             <input type="hidden" id="movementProductId">
+
             <label for="movementType">Movement Type</label>
-            <select id="movementType"><option value="IN">Stock IN</option><option value="OUT">Stock OUT</option></select>
+
+            <select id="movementType">
+                <option value="IN">Stock IN</option>
+                <option value="OUT">Stock OUT</option>
+            </select>
+
             <label for="movementQuantity">Quantity</label>
-            <input id="movementQuantity" type="number" min="1" step="1" required>
-            <button class="primary-btn full-btn" type="submit">Confirm Movement</button>
+            <input
+                id="movementQuantity"
+                type="number"
+                min="1"
+                step="1"
+                required
+            >
+
+            <button class="primary-btn full-btn" type="submit">
+                Confirm Movement
+            </button>
+
         </form>
     </div>
 </div>
 
+
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
 <script src="dashboard.js"></script>
+
 </body>
 </html>

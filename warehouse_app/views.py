@@ -2,25 +2,18 @@
 import json
 import uuid
 from decimal import Decimal, InvalidOperation
-from pathlib import Path
 
 from PIL import Image, UnidentifiedImageError
 
-from django.conf import settings
 from django.core.files.storage import default_storage
 from django.db import IntegrityError, transaction
 from django.http import JsonResponse
 from django.utils import timezone
-from django.views.decorators.csrf import csrf_exempt
 
 from .models import Products, Categories, Suppliers, StockMovements
 
 
-# ==========================================
-# PRODUCT IMAGE CONFIGURATION
-# ==========================================
-
-MAX_IMAGE_SIZE = 5 * 1024 * 1024  # 5 MB
+MAX_IMAGE_SIZE = 5 * 1024 * 1024
 
 ALLOWED_IMAGE_FORMATS = {
     "JPEG": ".jpg",
@@ -29,8 +22,11 @@ ALLOWED_IMAGE_FORMATS = {
 }
 
 
-def validate_and_save_image(uploaded_image):
+# ==========================================
+# IMAGE HELPERS
+# ==========================================
 
+def validate_and_save_image(uploaded_image):
     if not uploaded_image:
         return None
 
@@ -39,7 +35,6 @@ def validate_and_save_image(uploaded_image):
 
     try:
         uploaded_image.seek(0)
-
         image = Image.open(uploaded_image)
         image.verify()
 
@@ -51,19 +46,13 @@ def validate_and_save_image(uploaded_image):
             )
 
         uploaded_image.seek(0)
-
         extension = ALLOWED_IMAGE_FORMATS[image_format]
-
         filename = f"{uuid.uuid4().hex}{extension}"
 
-        image_path = f"products/{filename}"
-
-        saved_path = default_storage.save(
-            image_path,
+        return default_storage.save(
+            f"products/{filename}",
             uploaded_image
         )
-
-        return saved_path
 
     except ValueError:
         raise
@@ -76,7 +65,6 @@ def validate_and_save_image(uploaded_image):
 
 
 def delete_product_image(image_path):
-
     if image_path:
         try:
             if default_storage.exists(image_path):
@@ -86,7 +74,6 @@ def delete_product_image(image_path):
 
 
 def get_product_image_url(request, product):
-
     if not product.image:
         return None
 
@@ -99,7 +86,6 @@ def get_product_image_url(request, product):
 
 
 def get_product_request_data(request):
-
     content_type = request.content_type or ""
 
     if (
@@ -110,10 +96,9 @@ def get_product_request_data(request):
     ):
         data = request.POST.dict()
         uploaded_image = request.FILES.get("image")
-
     else:
         try:
-            data = json.loads(request.body)
+            data = json.loads(request.body or b"{}")
         except (json.JSONDecodeError, UnicodeDecodeError):
             raise ValueError("Invalid JSON data")
 
@@ -126,11 +111,10 @@ def get_product_request_data(request):
 
 
 # ==========================================
-# PRODUCTS API
+# PRODUCT LIST
 # ==========================================
 
 def product_list(request):
-
     if request.method != "GET":
         return JsonResponse({
             "success": False,
@@ -138,19 +122,16 @@ def product_list(request):
         }, status=405)
 
     products = Products.objects.select_related(
-        "category", "supplier"
+        "supplier"
     ).all().order_by("product_name")
 
     data = []
 
     for product in products:
-
         data.append({
             "product_id": product.product_id,
             "product_name": product.product_name,
             "sku": product.sku,
-            "category_id": product.category_id,
-            "category_name": product.category.category_name,
             "supplier_id": product.supplier_id,
             "supplier_name": (
                 product.supplier.supplier_name
@@ -172,44 +153,13 @@ def product_list(request):
 
 
 # ==========================================
-# CATEGORIES API
-# ==========================================
-
-def category_list(request):
-
-    if request.method != "GET":
-        return JsonResponse({
-            "success": False,
-            "message": "Method not allowed"
-        }, status=405)
-
-    categories = Categories.objects.all().order_by("category_name")
-
-    data = [
-        {
-            "category_id": category.category_id,
-            "category_name": category.category_name
-        }
-        for category in categories
-    ]
-
-    return JsonResponse({
-        "success": True,
-        "count": len(data),
-        "categories": data
-    })
-
-
-# ==========================================
 # PRODUCT VALIDATION
 # ==========================================
 
 def validate_product_data(data, existing=None):
-
     required_fields = [
         "product_name",
         "sku",
-        "category_id",
         "quantity",
         "reorder_level",
         "cost_price",
@@ -217,35 +167,32 @@ def validate_product_data(data, existing=None):
     ]
 
     if existing is None:
-
         for field in required_fields:
             if field not in data:
                 raise ValueError(f"{field} is required")
 
     allowed_fields = required_fields + ["supplier_id"]
-
     cleaned = {}
 
     for field in allowed_fields:
-
         if field not in data:
             continue
 
         value = data[field]
 
         if field in ["product_name", "sku"]:
-
             value = str(value).strip()
 
             if not value:
                 raise ValueError(f"{field} cannot be empty")
 
-        elif field in [
-            "category_id",
-            "quantity",
-            "reorder_level"
-        ]:
+            if field == "product_name" and len(value) > 100:
+                raise ValueError("Product name cannot exceed 100 characters")
 
+            if field == "sku" and len(value) > 50:
+                raise ValueError("SKU cannot exceed 50 characters")
+
+        elif field in ["quantity", "reorder_level"]:
             try:
                 number = Decimal(str(value))
 
@@ -254,30 +201,20 @@ def validate_product_data(data, existing=None):
 
                 value = int(number)
 
-            except (
-                InvalidOperation,
-                TypeError,
-                ValueError
-            ):
+            except (InvalidOperation, TypeError, ValueError):
                 raise ValueError(
                     f"{field} must be a whole number"
                 )
 
-            if field in ["quantity", "reorder_level"] and value < 0:
+            if value < 0:
                 raise ValueError(
                     f"{field} cannot be negative"
                 )
 
         elif field in ["cost_price", "selling_price"]:
-
             try:
                 value = Decimal(str(value))
-
-            except (
-                InvalidOperation,
-                TypeError,
-                ValueError
-            ):
+            except (InvalidOperation, TypeError, ValueError):
                 raise ValueError(
                     f"{field} must be a valid amount"
                 )
@@ -288,10 +225,8 @@ def validate_product_data(data, existing=None):
                 )
 
         elif field == "supplier_id":
-
             if value in [None, ""]:
                 value = None
-
             else:
                 try:
                     number = Decimal(str(value))
@@ -301,24 +236,12 @@ def validate_product_data(data, existing=None):
 
                     value = int(number)
 
-                except (
-                    InvalidOperation,
-                    TypeError,
-                    ValueError
-                ):
+                except (InvalidOperation, TypeError, ValueError):
                     raise ValueError(
                         "supplier_id must be a whole number"
                     )
 
         cleaned[field] = value
-
-    if (
-        "category_id" in cleaned
-        and not Categories.objects.filter(
-            category_id=cleaned["category_id"]
-        ).exists()
-    ):
-        raise ValueError("Selected category does not exist")
 
     if (
         cleaned.get("supplier_id") is not None
@@ -329,7 +252,6 @@ def validate_product_data(data, existing=None):
         raise ValueError("Selected supplier does not exist")
 
     if existing is not None:
-
         merged = {
             "product_name": existing.product_name,
             "sku": existing.sku,
@@ -351,9 +273,7 @@ def validate_product_data(data, existing=None):
 # CREATE PRODUCT
 # ==========================================
 
-@csrf_exempt
 def product_create(request):
-
     if request.method != "POST":
         return JsonResponse({
             "success": False,
@@ -363,10 +283,23 @@ def product_create(request):
     saved_image = None
 
     try:
-
         data, uploaded_image = get_product_request_data(request)
-
         cleaned = validate_product_data(data)
+
+        # Categories remain in the database for existing products.
+        # New products receive an internal default category.
+        default_category = Categories.objects.order_by(
+            "category_id"
+        ).first()
+
+        if default_category is None:
+            return JsonResponse({
+                "success": False,
+                "message": (
+                    "No existing default category is available. "
+                    "Please contact the administrator."
+                )
+            }, status=500)
 
         if uploaded_image:
             saved_image = validate_and_save_image(uploaded_image)
@@ -374,7 +307,7 @@ def product_create(request):
         product = Products(
             product_name=cleaned["product_name"],
             sku=cleaned["sku"],
-            category_id=cleaned["category_id"],
+            category_id=default_category.category_id,
             supplier_id=cleaned.get("supplier_id"),
             quantity=cleaned["quantity"],
             reorder_level=cleaned["reorder_level"],
@@ -393,7 +326,6 @@ def product_create(request):
         }, status=201)
 
     except (ValueError, TypeError) as error:
-
         delete_product_image(saved_image)
 
         return JsonResponse({
@@ -402,7 +334,6 @@ def product_create(request):
         }, status=400)
 
     except IntegrityError:
-
         delete_product_image(saved_image)
 
         return JsonResponse({
@@ -413,7 +344,6 @@ def product_create(request):
         }, status=400)
 
     except Exception:
-
         delete_product_image(saved_image)
 
         return JsonResponse({
@@ -426,12 +356,9 @@ def product_create(request):
 # UPDATE / DELETE PRODUCT
 # ==========================================
 
-@csrf_exempt
 def product_detail(request, product_id):
-
     try:
         product = Products.objects.get(product_id=product_id)
-
     except Products.DoesNotExist:
         return JsonResponse({
             "success": False,
@@ -439,12 +366,10 @@ def product_detail(request, product_id):
         }, status=404)
 
     if request.method in ["PUT", "PATCH"]:
-
         saved_image = None
         old_image = product.image
 
         try:
-
             data, uploaded_image = get_product_request_data(request)
 
             cleaned = validate_product_data(
@@ -452,15 +377,10 @@ def product_detail(request, product_id):
                 existing=product
             )
 
-            # Upload a new image if provided.
             if uploaded_image:
-                saved_image = validate_and_save_image(
-                    uploaded_image
-                )
-
+                saved_image = validate_and_save_image(uploaded_image)
                 product.image = saved_image
 
-            # Remove the existing image if requested.
             elif str(data.get("remove_image", "")).lower() in [
                 "true", "1", "yes"
             ]:
@@ -468,7 +388,10 @@ def product_detail(request, product_id):
 
             product.product_name = cleaned["product_name"]
             product.sku = cleaned["sku"]
+
+            # Keep the existing category unchanged internally.
             product.category_id = cleaned["category_id"]
+
             product.supplier_id = cleaned["supplier_id"]
             product.quantity = cleaned["quantity"]
             product.reorder_level = cleaned["reorder_level"]
@@ -477,7 +400,6 @@ def product_detail(request, product_id):
 
             product.save()
 
-            # Delete old image only after successful database save.
             if old_image and old_image != product.image:
                 delete_product_image(old_image)
 
@@ -488,7 +410,6 @@ def product_detail(request, product_id):
             })
 
         except (ValueError, TypeError) as error:
-
             delete_product_image(saved_image)
 
             return JsonResponse({
@@ -497,7 +418,6 @@ def product_detail(request, product_id):
             }, status=400)
 
         except IntegrityError:
-
             delete_product_image(saved_image)
 
             return JsonResponse({
@@ -508,7 +428,6 @@ def product_detail(request, product_id):
             }, status=400)
 
         except Exception:
-
             delete_product_image(saved_image)
 
             return JsonResponse({
@@ -517,11 +436,9 @@ def product_detail(request, product_id):
             }, status=500)
 
     elif request.method == "DELETE":
-
         if StockMovements.objects.filter(
             product_id=product_id
         ).exists():
-
             return JsonResponse({
                 "success": False,
                 "message": (
@@ -530,9 +447,7 @@ def product_detail(request, product_id):
             }, status=400)
 
         old_image = product.image
-
         product.delete()
-
         delete_product_image(old_image)
 
         return JsonResponse({
@@ -547,11 +462,10 @@ def product_detail(request, product_id):
 
 
 # ==========================================
-# STOCK MOVEMENT LIST API
+# STOCK MOVEMENT LIST
 # ==========================================
 
 def stock_movement_list(request):
-
     if request.method != "GET":
         return JsonResponse({
             "success": False,
@@ -565,7 +479,6 @@ def stock_movement_list(request):
     data = []
 
     for movement in movements:
-
         data.append({
             "movement_id": movement.movement_id,
             "product_id": movement.product_id,
@@ -585,12 +498,10 @@ def stock_movement_list(request):
 
 
 # ==========================================
-# CREATE STOCK MOVEMENT API
+# CREATE STOCK MOVEMENT
 # ==========================================
 
-@csrf_exempt
 def stock_movement_create(request):
-
     if request.method != "POST":
         return JsonResponse({
             "success": False,
@@ -598,13 +509,10 @@ def stock_movement_create(request):
         }, status=405)
 
     try:
-
-        data = json.loads(request.body)
+        data = json.loads(request.body or b"{}")
 
         if not isinstance(data, dict):
-            raise ValueError(
-                "Request data must be a JSON object"
-            )
+            raise ValueError("Request data must be a JSON object")
 
         try:
             product_id = int(data.get("product_id"))
@@ -619,17 +527,11 @@ def stock_movement_create(request):
 
             quantity = int(quantity_value)
 
-        except (
-            InvalidOperation,
-            TypeError,
-            ValueError
-        ):
+        except (InvalidOperation, TypeError, ValueError):
             raise ValueError("Quantity must be a whole number")
 
         if quantity <= 0:
-            raise ValueError(
-                "Quantity must be greater than zero"
-            )
+            raise ValueError("Quantity must be greater than zero")
 
         requested_type = str(
             data.get("movement_type", "")
@@ -641,9 +543,7 @@ def stock_movement_create(request):
         }
 
         if requested_type not in movement_type_map:
-            raise ValueError(
-                "Movement type must be IN or OUT"
-            )
+            raise ValueError("Movement type must be IN or OUT")
 
         database_type = movement_type_map[requested_type]
 
@@ -657,12 +557,10 @@ def stock_movement_create(request):
             )
 
         with transaction.atomic():
-
             try:
                 product = Products.objects.select_for_update().get(
                     product_id=product_id
                 )
-
             except Products.DoesNotExist:
                 return JsonResponse({
                     "success": False,
@@ -670,11 +568,8 @@ def stock_movement_create(request):
                 }, status=404)
 
             if requested_type == "IN":
-
                 product.quantity += quantity
-
             else:
-
                 if quantity > product.quantity:
                     raise ValueError(
                         f"Insufficient stock. Available quantity: "
@@ -721,18 +616,17 @@ def stock_movement_create(request):
 
 
 # ==========================================
-# ANALYTICS API
+# ANALYTICS
 # ==========================================
 
 def analytics_dashboard(request):
-
     if request.method != "GET":
         return JsonResponse({
             "success": False,
             "message": "Method not allowed"
         }, status=405)
 
-    products = Products.objects.select_related("category")
+    products = Products.objects.all()
 
     total_products = products.count()
     total_stock = 0
@@ -743,10 +637,7 @@ def analytics_dashboard(request):
     inventory_cost_value = Decimal("0.00")
     inventory_selling_value = Decimal("0.00")
 
-    category_summary = {}
-
     for product in products:
-
         total_stock += product.quantity
 
         inventory_cost_value += (
@@ -757,8 +648,7 @@ def analytics_dashboard(request):
             Decimal(product.quantity) * product.selling_price
         )
 
-        if product.quantity <= product.reorder_level:
-
+        if 0 < product.quantity <= product.reorder_level:
             low_stock_products.append({
                 "product_id": product.product_id,
                 "product_name": product.product_name,
@@ -767,27 +657,10 @@ def analytics_dashboard(request):
             })
 
         if product.quantity == 0:
-
             out_of_stock_products.append({
                 "product_id": product.product_id,
                 "product_name": product.product_name
             })
-
-        category_name = product.category.category_name
-
-        if category_name not in category_summary:
-
-            category_summary[category_name] = {
-                "category_name": category_name,
-                "product_count": 0,
-                "total_quantity": 0
-            }
-
-        category_summary[category_name]["product_count"] += 1
-
-        category_summary[category_name]["total_quantity"] += (
-            product.quantity
-        )
 
     total_movements = StockMovements.objects.count()
 
@@ -804,15 +677,13 @@ def analytics_dashboard(request):
     ).count()
 
     return JsonResponse({
-
         "success": True,
 
         "overview": {
             "total_products": total_products,
             "total_stock": total_stock,
             "low_stock_count": len(low_stock_products),
-            "out_of_stock_count": len(out_of_stock_products),
-            "total_categories": Categories.objects.count()
+            "out_of_stock_count": len(out_of_stock_products)
         },
 
         "inventory": {
@@ -828,9 +699,5 @@ def analytics_dashboard(request):
         },
 
         "low_stock_products": low_stock_products,
-
-        "out_of_stock_products": out_of_stock_products,
-
-        "category_summary": list(category_summary.values())
-
+        "out_of_stock_products": out_of_stock_products
     })
