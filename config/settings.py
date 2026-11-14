@@ -5,25 +5,13 @@ import os
 from dotenv import load_dotenv
 from django.core.exceptions import ImproperlyConfigured
 
-
-# =========================================================
 # BASE DIRECTORY
-# =========================================================
-
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
-# =========================================================
 # ENVIRONMENT VARIABLES
-# =========================================================
-
 load_dotenv(BASE_DIR / ".env")
 
-
-# =========================================================
 # SECURITY SETTINGS
-# =========================================================
-
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
 
 if not SECRET_KEY:
@@ -37,13 +25,10 @@ ALLOWED_HOSTS = [
     "localhost",
     "127.0.0.1",
     "stocksphere-production.up.railway.app",
+    ".railway.app",
 ]
 
-
-# =========================================================
 # INSTALLED APPLICATIONS
-# =========================================================
-
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -51,22 +36,14 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-
     "corsheaders",
-
     "warehouse_app",
 ]
 
-
-# =========================================================
 # MIDDLEWARE
-# =========================================================
-
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-
     "corsheaders.middleware.CorsMiddleware",
-
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -75,18 +52,10 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-
-# =========================================================
 # URL CONFIGURATION
-# =========================================================
-
 ROOT_URLCONF = "config.urls"
 
-
-# =========================================================
 # TEMPLATES
-# =========================================================
-
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
@@ -102,40 +71,25 @@ TEMPLATES = [
     },
 ]
 
-
-# =========================================================
-# WSGI APPLICATION
-# =========================================================
-
+# WSGI
 WSGI_APPLICATION = "config.wsgi.application"
 
-
-# =========================================================
-# DATABASE CONFIGURATION - MYSQL
-# =========================================================
-
+# MYSQL DATABASE
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.mysql",
-
         "NAME": os.getenv("DB_NAME", "stocksphere_db"),
         "USER": os.getenv("DB_USER", "root"),
         "PASSWORD": os.getenv("DB_PASSWORD", ""),
-
         "HOST": os.getenv("DB_HOST", "127.0.0.1"),
         "PORT": os.getenv("DB_PORT", "3306"),
-
         "OPTIONS": {
             "charset": "utf8mb4",
         },
     }
 }
 
-
-# =========================================================
 # PASSWORD VALIDATION
-# =========================================================
-
 AUTH_PASSWORD_VALIDATORS = [
     {
         "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
@@ -151,65 +105,33 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
-# =========================================================
 # INTERNATIONALIZATION
-# =========================================================
-
 LANGUAGE_CODE = "en-us"
-
 TIME_ZONE = "Asia/Kolkata"
-
 USE_I18N = True
-
 USE_TZ = True
 
-
-# =========================================================
 # STATIC FILES
-# =========================================================
-
 STATIC_URL = "static/"
 
-
-# =========================================================
-# MEDIA FILES / PRODUCT IMAGES
-# =========================================================
-
+# MEDIA FILES
 MEDIA_URL = "/media/"
-
 MEDIA_ROOT = BASE_DIR / "media"
 
-
-# =========================================================
-# CORS CONFIGURATION
-# =========================================================
-
+# CORS
 CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:5500",
     "http://localhost:5500",
 ]
 
-
-# =========================================================
-# CSRF CONFIGURATION
-# =========================================================
-
+# CSRF
 CSRF_TRUSTED_ORIGINS = [
     "http://127.0.0.1:5500",
     "http://localhost:5500",
 ]
 
-
-# =========================================================
-# EMAIL CONFIGURATION
-# =========================================================
-
+# EMAIL
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
-
-# =========================================================
 # DEFAULT PRIMARY KEY
-# =========================================================
-
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
