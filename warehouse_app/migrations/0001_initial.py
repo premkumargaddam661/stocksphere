@@ -19,7 +19,7 @@ class Migration(migrations.Migration):
             ],
             options={
                 'db_table': 'categories',
-                'managed': False,
+                'managed': True,
             },
         ),
         migrations.CreateModel(
@@ -36,7 +36,7 @@ class Migration(migrations.Migration):
             ],
             options={
                 'db_table': 'products',
-                'managed': False,
+                'managed': True,
             },
         ),
         migrations.CreateModel(
@@ -50,7 +50,7 @@ class Migration(migrations.Migration):
             ],
             options={
                 'db_table': 'stock_movements',
-                'managed': False,
+                'managed': True,
             },
         ),
         migrations.CreateModel(
@@ -64,7 +64,7 @@ class Migration(migrations.Migration):
             ],
             options={
                 'db_table': 'suppliers',
-                'managed': False,
+                'managed': True,
             },
         ),
     ]
