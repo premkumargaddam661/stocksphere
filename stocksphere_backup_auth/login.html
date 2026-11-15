@@ -2,107 +2,291 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>StockSphere | Login</title>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>StockSphere | Login</title>
+
+    <link rel="stylesheet" href="style.css">
+
+    <style>
+        .login-form-panel {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 420px;
+        }
+
+        .login-card h2 {
+            margin-bottom: 8px;
+        }
+
+        .login-subtitle {
+            margin-bottom: 28px;
+            color: #9ba7b8;
+        }
+
+        .login-field {
+            margin-bottom: 18px;
+        }
+
+        .login-field label {
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .login-field input {
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .password-wrapper {
+            position: relative;
+        }
+
+        .password-wrapper input {
+            padding-right: 75px;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            border: none;
+            background: transparent;
+            color: #55d6a2;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .login-options {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 15px 0 22px;
+            gap: 10px;
+        }
+
+        .remember-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .remember-option input {
+            width: auto;
+        }
+
+        .forgot-link,
+        .register-link {
+            color: #55d6a2;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .login-submit {
+            width: 100%;
+            cursor: pointer;
+        }
+
+        .login-submit:disabled {
+            opacity: 0.65;
+            cursor: not-allowed;
+        }
+
+        #loginMessage {
+            min-height: 22px;
+            margin-top: 16px;
+            font-size: 13px;
+            text-align: center;
+        }
+
+        .register-prompt {
+            text-align: center;
+            margin-top: 24px;
+            color: #9ba7b8;
+        }
+
+        @media (max-width: 768px) {
+            .login-wrapper {
+                min-height: 100vh;
+            }
+
+            .login-brand-panel {
+                display: none;
+            }
+
+            .login-form-panel {
+                width: 100%;
+                padding: 25px;
+            }
+        }
+    </style>
 </head>
-<body class="login-body">
 
-  <div class="login-background"></div>
+<body>
 
-  <a href="landing.html" class="back-home">← BACK TO HOME</a>
+    <main class="login-wrapper">
 
-  <main class="login-wrapper">
+        <!-- BRAND PANEL -->
+        <section class="login-brand-panel">
 
-    <section class="login-brand-panel">
-      <div class="login-brand">
-        <div class="brand-icon large">S</div>
-        <h1>STOCK<span>SPHERE</span></h1>
-      </div>
+            <div class="login-brand-content">
 
-      <div class="login-brand-message">
-        <span class="section-tag">YOUR INVENTORY ECOSYSTEM</span>
-        <h2>Control<br>everything.<br><span>Miss nothing.</span></h2>
-        <p>
-          One intelligent space to manage products,
-          monitor inventory and make better decisions.
-        </p>
-      </div>
+                <h1>StockSphere</h1>
 
-      <div class="login-panel-footer">
-        INTELLIGENT INVENTORY MANAGEMENT
-      </div>
-    </section>
+                <p>
+                    Smart Inventory Management System
+                </p>
 
-    <section class="login-form-panel">
-      <div class="login-card">
+                <div class="login-brand-description">
+                    Manage products, monitor inventory,
+                    track stock movements and understand
+                    your business with powerful analytics.
+                </div>
 
-        <span class="section-tag">WELCOME BACK</span>
+            </div>
 
-        <h2>Sign in<span>.</span></h2>
+        </section>
 
-        <p class="login-subtitle">
-          Access your StockSphere workspace.
-        </p>
 
-        <form id="loginForm">
+        <!-- LOGIN PANEL -->
+        <section class="login-form-panel">
 
-          <label for="email">EMAIL ADDRESS</label>
-          <input
-            type="email"
-            id="email"
-            placeholder="you@example.com"
-            required
-          >
+            <div class="login-card">
 
-          <label for="password">PASSWORD</label>
+                <h2>Welcome Back</h2>
 
-          <div class="password-field">
-            <input
-              type="password"
-              id="password"
-              placeholder="Enter your password"
-              minlength="6"
-              required
-            >
-            <button type="button" id="togglePassword">SHOW</button>
-          </div>
+                <p class="login-subtitle">
+                    Sign in to access your inventory dashboard.
+                </p>
 
-          <div class="login-options">
-            <label class="remember-label">
-              <input type="checkbox" id="remember">
-              Remember me
-            </label>
 
-            <button type="button" class="forgot-button" id="forgotPassword">
-              Forgot password?
-            </button>
-          </div>
+                <form id="loginForm">
 
-          <button type="submit" class="login-submit">
-            SIGN IN <span>↗</span>
-          </button>
+                    <!-- EMAIL -->
+                    <div class="login-field">
 
-          <p id="loginMessage" class="login-message" aria-live="polite"></p>
+                        <label for="email">
+                            Email Address
+                        </label>
 
-        </form>
+                        <input
+                            type="email"
+                            id="email"
+                            name="email"
+                            placeholder="Enter your email"
+                            autocomplete="username"
+                            required
+                        >
 
-        <div class="login-security">
-          <span>◈</span>
-          SECURE INVENTORY ACCESS
-        </div>
+                    </div>
 
-        <p class="login-bottom">
-          New to StockSphere?
-          <a href="landing.html">Explore our platform</a>
-        </p>
 
-      </div>
-    </section>
+                    <!-- PASSWORD -->
+                    <div class="login-field">
 
-  </main>
+                        <label for="password">
+                            Password
+                        </label>
 
-  <script src="login.js"></script>
+                        <div class="password-wrapper">
+
+                            <input
+                                type="password"
+                                id="password"
+                                name="password"
+                                placeholder="Enter your password"
+                                autocomplete="current-password"
+                                required
+                            >
+
+                            <button
+                                type="button"
+                                id="togglePassword"
+                                class="password-toggle"
+                            >
+                                SHOW
+                            </button>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- LOGIN OPTIONS -->
+                    <div class="login-options">
+
+                        <label class="remember-option">
+
+                            <input
+                                type="checkbox"
+                                id="remember"
+                                name="remember"
+                            >
+
+                            <span>Remember me</span>
+
+                        </label>
+
+                        <a
+                            href="#"
+                            id="forgotPassword"
+                            class="forgot-link"
+                        >
+                            Forgot password?
+                        </a>
+
+                    </div>
+
+
+                    <!-- LOGIN BUTTON -->
+                    <button
+                        type="submit"
+                        class="login-submit"
+                    >
+                        Sign In
+                    </button>
+
+
+                    <!-- LOGIN MESSAGE -->
+                    <p
+                        id="loginMessage"
+                        role="status"
+                        aria-live="polite"
+                    ></p>
+
+                </form>
+
+
+                <!-- REGISTRATION -->
+                <p class="register-prompt">
+
+                    Don't have an account?
+
+                    <a
+                        href="register.html"
+                        class="register-link"
+                    >
+                        Create Account
+                    </a>
+
+                </p>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <!-- AUTHENTICATION SCRIPT -->
+    <script src="login.js?v=2"></script>
+
 </body>
 </html>

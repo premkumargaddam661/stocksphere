@@ -5,91 +5,130 @@ const togglePassword = document.getElementById("togglePassword");
 const loginMessage = document.getElementById("loginMessage");
 const forgotPassword = document.getElementById("forgotPassword");
 
-// Check that required elements exist
-if (!loginForm || !password || !togglePassword || !loginMessage) {
-    console.error("StockSphere login elements are missing.");
+// Local development uses Django on port 8000.
+// Railway uses the same domain for frontend and backend.
+const API_BASE =
+    location.hostname === "localhost" ||
+    location.hostname === "127.0.0.1"
+        ? `http://${location.hostname}:8000/api`
+        : "/api";
+
+function showMessage(message, success = false) {
+    loginMessage.style.color = success ? "#55d6a2" : "#ff6675";
+    loginMessage.textContent = message;
+}
+
+async function getCsrfToken() {
+    const response = await fetch(`${API_BASE}/auth/csrf/`, {
+        method: "GET",
+        credentials: "include",
+        cache: "no-store"
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || !data.csrfToken) {
+        throw new Error("Unable to initialize secure login. Please refresh.");
+    }
+
+    return data.csrfToken;
 }
 
 // Show / hide password
-togglePassword.addEventListener("click", () => {
-    if (password.type === "password") {
-        password.type = "text";
-        togglePassword.textContent = "HIDE";
-    } else {
-        password.type = "password";
-        togglePassword.textContent = "SHOW";
-    }
-});
-
-// Login
-loginForm.addEventListener("submit", (event) => {
-    event.preventDefault();
-
-    const email = document.getElementById("email").value.trim();
-    const pass = password.value;
-    const remember = document.getElementById("remember").checked;
-
-    loginMessage.style.color = "#ff6675";
-
-    if (!email || !pass) {
-        loginMessage.textContent = "Please complete all fields.";
-        return;
-    }
-
-    if (pass.length < 6) {
-        loginMessage.textContent =
-            "Password must contain at least 6 characters.";
-        return;
-    }
-
-    // DEMO LOGIN ONLY - Django authentication will replace this.
-    const user = {
-        email: email,
-        loggedIn: true
-    };
-
-    try {
-        localStorage.removeItem("stocksphere_user");
-        sessionStorage.removeItem("stocksphere_user");
-
-        if (remember) {
-            localStorage.setItem(
-                "stocksphere_user",
-                JSON.stringify(user)
-            );
+if (togglePassword && password) {
+    togglePassword.addEventListener("click", () => {
+        if (password.type === "password") {
+            password.type = "text";
+            togglePassword.textContent = "HIDE";
         } else {
-            sessionStorage.setItem(
-                "stocksphere_user",
-                JSON.stringify(user)
-            );
+            password.type = "password";
+            togglePassword.textContent = "SHOW";
+        }
+    });
+}
+
+// Django session login
+if (loginForm) {
+    loginForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        const email = document.getElementById("email").value.trim();
+        const pass = password.value;
+        const remember = document.getElementById("remember").checked;
+
+        if (!email || !pass) {
+            showMessage("Please enter your email and password.");
+            return;
         }
 
-        loginMessage.style.color = "#55d6a2";
-        loginMessage.textContent = "Login successful! Opening dashboard...";
+        const submitButton = loginForm.querySelector(
+            'button[type="submit"], input[type="submit"]'
+        );
 
-        // Redirect to dashboard
-        setTimeout(() => {
+        if (submitButton) {
+            submitButton.disabled = true;
+        }
+
+        showMessage("Connecting securely to StockSphere...", true);
+
+        try {
+            const csrfToken = await getCsrfToken();
+
+            const response = await fetch(`${API_BASE}/auth/login/`, {
+                method: "POST",
+                credentials: "include",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": csrfToken
+                },
+                body: JSON.stringify({
+                    email: email,
+                    password: pass,
+                    remember: remember
+                })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok || !data.success) {
+                showMessage(
+                    data.message || "Login failed. Please try again."
+                );
+                return;
+            }
+
+            showMessage("Login successful! Opening dashboard...", true);
+
             window.location.href = "index.html";
-        }, 700);
 
-    } catch (error) {
-        loginMessage.textContent =
-            "Login failed. Browser storage is unavailable.";
-    }
-});
+        } catch (error) {
+            console.error("StockSphere login error:", error);
+
+            showMessage(
+                error instanceof TypeError
+                    ? "Cannot connect to the server. Please check your connection."
+                    : error.message || "Something went wrong. Please try again."
+            );
+
+        } finally {
+            if (submitButton) {
+                submitButton.disabled = false;
+            }
+        }
+    });
+}
 
 // Forgot password
-forgotPassword.addEventListener("click", () => {
-    const email = document.getElementById("email").value.trim();
+if (forgotPassword) {
+    forgotPassword.addEventListener("click", (event) => {
+        event.preventDefault();
 
-    if (!email) {
-        loginMessage.style.color = "#ff6675";
-        loginMessage.textContent =
-            "Please enter your email address first.";
-        return;
-    }
+        const email = document.getElementById("email").value.trim();
 
-    loginMessage.style.color = "#ff6675";
-    loginMessage.textContent =
-        "Password recovery will be available with Django.";
-});
+        showMessage(
+            email
+                ? "Password recovery is not available yet. Contact your administrator."
+                : "Please enter your email address first."
+        );
+    });
+}
