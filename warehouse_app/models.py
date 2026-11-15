@@ -14,7 +14,7 @@ class Categories(models.Model):
     )
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'categories'
 
     def __str__(self):
@@ -33,7 +33,7 @@ class Suppliers(models.Model):
     address = models.CharField(max_length=200, blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'suppliers'
 
     def __str__(self):
@@ -74,7 +74,7 @@ class Products(models.Model):
     )
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'products'
 
     def __str__(self):
@@ -105,8 +105,9 @@ class StockMovements(models.Model):
     movement_date = models.DateTimeField()
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'stock_movements'
 
     def __str__(self):
         return f"{self.movement_type} - {self.product}"
+
